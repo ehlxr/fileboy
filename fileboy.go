@@ -55,9 +55,9 @@ type changedFile struct {
 	Event   string
 }
 
-func parseConfig() {
+func parseConfig(filegirlYamlPath string) {
 	cfg = new(FileGirl)
-	fc, err := ioutil.ReadFile(getFileGirlPath())
+	fc, err := ioutil.ReadFile(filegirlYamlPath)
 	if err != nil {
 		logError("the filegirl.yaml file in", projectFolder, "is not exist! ", err)
 		fmt.Print(firstRunHelp)
@@ -132,9 +132,9 @@ func addWatcher() {
 		if len(darr) < 1 || len(darr) > 2 {
 			logAndExit("filegirl section monitor dirs is error. ", dir)
 		}
-		if strings.HasPrefix(darr[0], "/") {
-			logAndExit("dirs must be relative paths ! err path:", dir)
-		}
+		//if strings.HasPrefix(darr[0], "/") {
+		//	logAndExit("dirs must be relative paths ! err path:", dir)
+		//}
 		if darr[0] == "." {
 			if len(darr) == 2 && darr[1] == "*" {
 				// The highest priority
@@ -150,7 +150,8 @@ func addWatcher() {
 				dirsMap[projectFolder] = true
 			}
 		} else {
-			md := projectFolder + "/" + darr[0]
+			//md := projectFolder + "/" + darr[0]
+			md := darr[0]
 			dirsMap[md] = true
 			if len(darr) == 2 && darr[1] == "*" {
 				listFile(md, func(d string) {
@@ -263,7 +264,7 @@ func parseArgs() {
 	switch {
 	case len(os.Args) == 1:
 		show()
-		parseConfig()
+		parseConfig(getFileGirlPath())
 		done := make(chan bool)
 		initWatcher()
 		defer watcher.Close()
@@ -304,13 +305,13 @@ func parseArgs() {
 			logUInfo("profile filegirl.yaml created ok")
 			return
 		case "exec":
-			parseConfig()
+			parseConfig(getFileGirlPath())
 			newTaskMan(0, cfg.Notifier.CallUrl).run(new(changedFile))
 			return
 		case "profile":
-			filegirlYamlName = os.Args[2]
+			filegirlYamlPath := os.Args[2]
 			show()
-			parseConfig()
+			parseConfig(filegirlYamlPath)
 			done := make(chan bool)
 			initWatcher()
 			defer watcher.Close()
